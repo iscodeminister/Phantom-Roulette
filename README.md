@@ -22,7 +22,7 @@
 - [ ] find a way to control the frequency easier and precise
 - [ ] mobile friendly interface (w/o keyboard so no up and down key)
 
-### Hardware
+  ### Hardware
 - [ ] need to **hook up** to one board
 - [ ] buy frequency generator
 - [ ] buy voltage regulator
@@ -30,8 +30,9 @@
 - [ ] disc **replacement** (important) ***may change the material to acrylic
 - [ ] may use a relay to control ***reverse function***
 
-### Software
+  ### Software
 - [ ] let it be more stability as possible
 - [ ] measure the output using Oscilloscope (ensure the output is precise enough)
 - [ ] find out more method or mode to demo
 - [ ] ??? add fast demo mode (preset for specific scenario)
+- [ ] implement the python into website (disc maker)
