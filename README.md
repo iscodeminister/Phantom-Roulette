@@ -12,3 +12,26 @@
 
 - **連續圖片模式**   
   可接受 `.gif` 檔案，並透過改變 `縮放比例` 與`高度/半徑`調整連續圖片的大小與半徑，勾選 `翻轉` 鏡射動畫內外方向。
+
+
+
+  ## TOdos
+  ### UI
+- [ ] change from PWM to percent (e.g. 0.001%)
+- [ ] customization the frequency multiplier
+- [ ] find a way to control the frequency easier and precise
+- [ ] mobile friendly interface (w/o keyboard so no up and down key)
+
+### Hardware
+- [ ] need to **hook up** to one board
+- [ ] buy frequency generator
+- [ ] buy voltage regulator
+- [ ] buy MOS-FET (DIY stroboscope)
+- [ ] disc **replacement** (important) ***may change the material to acrylic
+- [ ] may use a relay to control ***reverse function***
+
+### Software
+- [ ] let it be more stability as possible
+- [ ] measure the output using Oscilloscope (ensure the output is precise enough)
+- [ ] find out more method or mode to demo
+- [ ] ??? add fast demo mode (preset for specific scenario)
