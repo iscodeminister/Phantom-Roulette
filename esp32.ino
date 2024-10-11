@@ -28,15 +28,6 @@ void setup() {
   ledcAttachPin(bldcPin, bldcChannel);
   ledcAttachPin(strobePin, strobeChannel);
   
-  // Connect to Wi-Fi
-  /*
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.println("Connecting to WiFi...");
-  }
-  Serial.println(WiFi.localIP());
-  */
   WiFi.softAP(ssid, password);
   Serial.println("Access Point Started");
   Serial.print("IP Address: ");
@@ -209,5 +200,5 @@ void setup() {
 }
 
 void loop() {
-  // The web server handles requests asynchronously, so we don't need anything in the loop
+  
 }
