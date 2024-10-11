@@ -15,7 +15,7 @@
 
 
 
-  ## TOdos
+  ## Todos
   ### UI
 - [ ] change from PWM to percent (e.g. 0.001%)
 - [ ] customization the frequency multiplier
