@@ -1,0 +1,136 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, maximum-scale=1" />
+        <title>Phantom Roulette v1.14</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #0d1117;
+                color: #c9d1d9;
+                margin: 0;
+                padding: 20px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+            }
+            .container {
+                background-color: #161b22;
+                border-radius: 10px;
+                padding: 20px;
+                width: 100%;
+                max-width: 400px;
+                box-shadow: 0 1px 3px rgba(27, 31, 35, 0.12), 0 8px 24px rgba(27, 31, 35, 0.12);
+            }
+            h2 {
+                text-align: center;
+                color: #c9d1d9;
+                margin-bottom: 5px;
+            }
+            p {
+                text-align: center;
+                color: #8b949e;
+                margin-top: 0;
+                margin-bottom: 20px;
+            }
+            .control-group {
+                margin-bottom: 20px;
+            }
+            label {
+                display: block;
+                margin-bottom: 5px;
+                color: #c9d1d9;
+            }
+            .input-group {
+                display: flex;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+            input[type="number"] {
+                flex-grow: 1;
+                background-color: #0d1117;
+                border: 1px solid #30363d;
+                color: #c9d1d9;
+                padding: 10px;
+                border-radius: 5px;
+            }
+            .value-display {
+                margin-left: 10px;
+                color: #c9d1d9;
+                font-weight: bold;
+            }
+            .button-group {
+                display: flex;
+                justify-content: space-between;
+            }
+            button {
+                background-color: #238636;
+                color: #ffffff;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+            button:hover {
+                background-color: #2ea043;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h2>Phantom Roulette</h2>
+            <p>Try it yourself</p>
+            
+            <div class="control-group">
+                <label for="bldc">Brushless Motor Speed:</label>
+                <div class="input-group">
+                    <input type="number" id="bldc" min="800" max="8000" value="400" onchange="updatePWM('bldc', this.value)">
+                    <span >/16383</span>
+                </div>
+                <div class="button-group">
+                    <button onclick="updatePWM('bldc', parseInt(document.getElementById('bldc').value) - 200)">-200</button>
+                    <button onclick="updatePWM('bldc', parseInt(document.getElementById('bldc').value) - 25)">-25</button>
+                    <button onclick="updatePWM('bldc', parseInt(document.getElementById('bldc').value) + 25)">+25</button>
+                    <button onclick="updatePWM('bldc', parseInt(document.getElementById('bldc').value) + 200)">+200</button>
+                    <button onclick="updatePWM('bldc', parseInt(0))">Reset</button>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label for="freq">Strobe Frequency (Hz):</label>
+                <div class="input-group">
+                    <input type="number" id="freq" min="30" max="480" value="60" onchange="updateFreq(this.value)">
+                    <span>Hz</span>
+                </div>
+                <div class="button-group">
+                    <button onclick="updateFreq(parseFloat(document.getElementById('freq').value) / 2)">Divide 2</button>
+                    <button onclick="updateFreq(parseFloat(document.getElementById('freq').value) * 2)">Multiply 2</button>
+                    <button onclick="updateFreq(parseFloat(60))">Reset</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function updatePWM(device, value) {
+                value = Math.max(800, Math.min(8000, parseInt(value)));
+                document.getElementById(device).value = value;
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', '/setPWM?device=' + device + '&value=' + value, true);
+                xhr.send();
+                document.getElementById(device + 'Value').innerText = value;
+            }
+
+            function updateFreq(value) {
+                value = Math.max(30, Math.min(480, Math.round(parseFloat(value))));
+                document.getElementById('freq').value = value;
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', '/setFreq?value=' + value, true);
+                xhr.send();
+                document.getElementById('freqValue').innerText = value;
+                
+            }
+
+        </script>
+    </body>
+    </html>
