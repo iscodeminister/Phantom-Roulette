@@ -123,7 +123,7 @@ void setup() {
             <div class="control-group">
                 <label for="bldc">Brushless Motor Speed:</label>
                 <div class="input-group">
-                    <input type="number" id="bldc" min="5" max="50" value="10.000" step="0.001" onchange="updatePWM('bldc', this.value)">
+                    <input type="number" id="bldc" min="4.882" max="40" value="4.882" step="0.001" onchange="updatePWM('bldc', this.value)">
                     <span>%</span>
                 </div>
                 <div class="button-group">
@@ -151,7 +151,7 @@ void setup() {
 
         <script>
             function updatePWM(device, value) {
-                value = Math.max(0, Math.min(100, parseFloat(value))).toFixed(2);
+                value = Math.max(0, Math.min(100, parseFloat(value))).toFixed(3);
                 document.getElementById(device).value = value;
                 var pwmValue = Math.round((value / 100) * 16383);
                 var xhr = new XMLHttpRequest();
