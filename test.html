@@ -80,11 +80,12 @@
     </head>
     <body>
         <div class="container">
-            <h2>Phantom Roulette</h2>
+            <h2>幻影輪盤</h2>
+            <p>Phantom Roulette</p>
             <p>Try it yourself</p>
             
             <div class="control-group">
-                <label for="bldc">Brushless Motor Speed:</label>
+                <label for="bldc">無刷馬達速度 Brushless Motor Speed:</label>
                 <div class="input-group">
                     <input type="number" id="bldc" min="4.882" max="40" value="4.882" step="0.001" onchange="updatePWM('bldc', this.value)">
                     <span>%</span>
@@ -94,12 +95,12 @@
                     <button onclick="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) - 0.01)">-0.01%</button>
                     <button onclick="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) + 0.01)">+0.01%</button>
                     <button onclick="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) + 0.001)">+0.001%</button>
-                    <button onclick="updatePWM('bldc', 0)">Reset</button>
+                    <button onclick="updatePWM('bldc', 4.882)">Reset</button>
                 </div>
             </div>
             
             <div class="control-group">
-                <label for="freq">Strobe Frequency (Hz):</label>
+                <label for="freq">閃爍頻率 Strobe Frequency (Hz):</label>
                 <div class="input-group">
                     <input type="number" id="freq" min="30" max="480" value="60" onchange="updateFreq(this.value)">
                     <span>Hz</span>
@@ -114,7 +115,7 @@
 
         <script>
             function updatePWM(device, value) {
-                value = Math.max(0, Math.min(40, parseFloat(value))).toFixed(3);
+                value = Math.max(4.882, Math.min(40, parseFloat(value))).toFixed(3);
                 document.getElementById(device).value = value;
                 var pwmValue = Math.round((value / 100) * 16383);
                 var xhr = new XMLHttpRequest();
