@@ -105,7 +105,7 @@ void setup() {
                 background-color: #238636;
                 color: #ffffff;
                 border: none;
-                padding: 10px 20px;
+                padding: 10px 13px;
                 border-radius: 5px;
                 cursor: pointer;
             }
