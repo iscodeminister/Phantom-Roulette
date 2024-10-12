@@ -151,7 +151,7 @@ void setup() {
 
         <script>
             function updatePWM(device, value) {
-                value = Math.max(0, Math.min(100, parseFloat(value))).toFixed(3);
+                value = Math.max(0, Math.min(40, parseFloat(value))).toFixed(3);
                 document.getElementById(device).value = value;
                 var pwmValue = Math.round((value / 100) * 16383);
                 var xhr = new XMLHttpRequest();
