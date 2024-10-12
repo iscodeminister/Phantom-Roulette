@@ -25,7 +25,7 @@
 
 ## Todos
   ### UI
-- [ ] change from PWM to percent (e.g. 0.001%)
+- [x] change from PWM to percent (e.g. 0.001%)
 - [ ] customization the frequency multiplier
 - [ ] find a way to control the frequency easier and precise
 - [ ] mobile friendly interface (w/o keyboard so no up and down key)
