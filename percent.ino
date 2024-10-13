@@ -36,11 +36,11 @@ void setup() {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     String html = R"rawliteral(
     <!DOCTYPE html>
-    <html lang="en">
+    <html lang="zh-Hant-TW">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, user-scalable=no, maximum-scale=1" />
-        <title>Phantom Roulette v1.14</title>
+        <title>Phantom Roulette v1.15.1</title>
         <style>
             body {
                 font-family: Arial, sans-serif;
@@ -101,6 +101,7 @@ void setup() {
             .button-group {
                 display: flex;
                 justify-content: space-between;
+                flex-wrap: wrap;
             }
             button {
                 background-color: #238636;
@@ -109,6 +110,7 @@ void setup() {
                 padding: 10px 13px;
                 border-radius: 5px;
                 cursor: pointer;
+                margin: 5px 0;
             }
             button:hover {
                 background-color: #2ea043;
@@ -117,13 +119,14 @@ void setup() {
     </head>
     <body>
         <div class="container">
-            <h2>Phantom Roulette</h2>
-            <p>Try it yourself</p>
+            <h2>幻影輪盤</h2>
+            <p>Phantom Roulette</p>
             
             <div class="control-group">
-                <label for="bldc">Brushless Motor Speed:</label>
+                <label for="bldc">無刷馬達速度 Brushless Motor Speed:</label>
                 <div class="input-group">
                     <input type="number" id="bldc" min="4.882" max="40" value="4.882" step="0.001" onchange="updatePWM('bldc', this.value)">
+                    <pre>  </pre>
                     <span>%</span>
                 </div>
                 <div class="button-group">
@@ -131,19 +134,24 @@ void setup() {
                     <button onclick="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) - 0.01)">-0.01%</button>
                     <button onclick="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) + 0.01)">+0.01%</button>
                     <button onclick="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) + 0.001)">+0.001%</button>
-                    <button onclick="updatePWM('bldc', 0)">Reset</button>
+                    <button onclick="updatePWM('bldc', 4.882)">Reset</button>
                 </div>
             </div>
             
             <div class="control-group">
-                <label for="freq">Strobe Frequency (Hz):</label>
+                <label for="freq">閃爍頻率 Strobe Frequency (Hz):</label>
                 <div class="input-group">
                     <input type="number" id="freq" min="30" max="480" value="60" onchange="updateFreq(this.value)">
+                    <pre>  </pre>
                     <span>Hz</span>
                 </div>
                 <div class="button-group">
-                    <button onclick="updateFreq(parseFloat(document.getElementById('freq').value) / 2)">Divide 2</button>
-                    <button onclick="updateFreq(parseFloat(document.getElementById('freq').value) * 2)">Multiply 2</button>
+                    <input type="number" id="customMultiplier" min="1" max="10" value="2" step="0.1">
+                    <pre>   </pre>
+                    <button onclick="updateFreq(parseFloat(document.getElementById('freq').value) / document.getElementById('customMultiplier').value)">除 Divide</button>
+                    <pre>   </pre>
+                    <button onclick="updateFreq(parseFloat(document.getElementById('freq').value) * document.getElementById('customMultiplier').value)">乘 Multiply</button>
+                    <pre>   </pre>
                     <button onclick="updateFreq(60)">Reset</button>
                 </div>
             </div>
@@ -151,7 +159,7 @@ void setup() {
 
         <script>
             function updatePWM(device, value) {
-                value = Math.max(0, Math.min(40, parseFloat(value))).toFixed(3);
+                value = Math.max(4.882, Math.min(40, parseFloat(value))).toFixed(3);
                 document.getElementById(device).value = value;
                 var pwmValue = Math.round((value / 100) * 16383);
                 var xhr = new XMLHttpRequest();
@@ -165,6 +173,13 @@ void setup() {
                 var xhr = new XMLHttpRequest();
                 xhr.open('GET', '/setFreq?value=' + value, true);
                 xhr.send();
+            }
+
+            function applyCustomMultiplier() {
+                var currentFreq = parseFloat(document.getElementById('freq').value);
+                var multiplier = parseFloat(document.getElementById('customMultiplier').value);
+                var newFreq = currentFreq * multiplier;
+                updateFreq(newFreq);
             }
         </script>
     </body>
