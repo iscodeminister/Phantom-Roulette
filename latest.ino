@@ -7,15 +7,15 @@ const char* password = "12345678";
 
 // PWM configuration
 const int bldcPin = 26;  // GPIO pin for BLDC control
-const int strobePin = 27;  // GPIO pin for strobe light
-const int pwmFreq = 250;  // 5 kHz PWM frequency
-const int pwmResolution = 14;
+const int strobePin = 18;  // GPIO pin for strobe light
+const int pwmFreq = 5000;  // 5 kHz PWM frequency
+const int pwmResolution = 12;
 const int bldcChannel = 10;
-const int strobeChannel = 0;
+const int strobeChannel = 6;
 
 int bldcSpeed = 0;
-int strobeIntensity = 8192;
-float strobeFrequency = 60; 
+int strobeIntensity = 400;
+int strobeFrequency = 60; 
 AsyncWebServer server(80);
 
 void setup() {
@@ -27,6 +27,7 @@ void setup() {
   ledcSetup(strobeChannel, pwmFreq, pwmResolution);
   ledcAttachPin(bldcPin, bldcChannel);
   ledcAttachPin(strobePin, strobeChannel);
+  ledcWrite(strobeChannel, strobeIntensity);
   
   WiFi.softAP(ssid, password);
   Serial.println("Access Point Started");
@@ -42,79 +43,18 @@ void setup() {
         <meta name="viewport" content="width=device-width, user-scalable=no, maximum-scale=1" />
         <title>Phantom Roulette v1.15.1</title>
         <style>
-            body {
-                font-family: Arial, sans-serif;
-                background-color: #0d1117;
-                color: #c9d1d9;
-                margin: 0;
-                padding: 20px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                min-height: 100vh;
-            }
-            .container {
-                background-color: #161b22;
-                border-radius: 10px;
-                padding: 20px;
-                width: 100%;
-                max-width: 400px;
-                box-shadow: 0 1px 3px rgba(27, 31, 35, 0.12), 0 8px 24px rgba(27, 31, 35, 0.12);
-            }
-            h2 {
-                text-align: center;
-                color: #c9d1d9;
-                margin-bottom: 5px;
-            }
-            p {
-                text-align: center;
-                color: #8b949e;
-                margin-top: 0;
-                margin-bottom: 20px;
-            }
-            .control-group {
-                margin-bottom: 20px;
-            }
-            label {
-                display: block;
-                margin-bottom: 5px;
-                color: #c9d1d9;
-            }
-            .input-group {
-                display: flex;
-                align-items: center;
-                margin-bottom: 10px;
-            }
-            input[type="number"] {
-                flex-grow: 1;
-                background-color: #0d1117;
-                border: 1px solid #30363d;
-                color: #c9d1d9;
-                padding: 10px;
-                border-radius: 5px;
-            }
-            .value-display {
-                margin-left: 10px;
-                color: #c9d1d9;
-                font-weight: bold;
-            }
-            .button-group {
-                display: flex;
-                justify-content: space-between;
-                flex-wrap: wrap;
-            }
-            button {
-                background-color: #238636;
-                color: #ffffff;
-                border: none;
-                padding: 10px 13px;
-                border-radius: 5px;
-                cursor: pointer;
-                margin: 5px 0;
-            }
-            button:hover {
-                background-color: #2ea043;
-            }
+            body { font-family: Arial, sans-serif; background-color: #0d1117; color: #c9d1d9; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+            .container { background-color: #161b22; border-radius: 10px; padding: 20px; width: 100%; max-width: 400px; box-shadow: 0 1px 3px rgba(27, 31, 35, 0.12), 0 8px 24px rgba(27, 31, 35, 0.12); }
+            h2 { text-align: center; color: #c9d1d9; margin-bottom: 5px; }
+            p { text-align: center; color: #8b949e; margin-top: 0; margin-bottom: 20px; }
+            .control-group { margin-bottom: 20px; }
+            label { display: block; margin-bottom: 5px; color: #c9d1d9; }
+            .input-group { display: flex; align-items: center; margin-bottom: 10px; }
+            input[type="number"] { flex-grow: 1; background-color: #0d1117; border: 1px solid #30363d; color: #c9d1d9; padding: 10px; border-radius: 5px; }
+            .value-display { margin-left: 10px; color: #c9d1d9; font-weight: bold; }
+            .button-group { display: flex; justify-content: space-between; flex-wrap: wrap; }
+            button { background-color: #238636; color: #ffffff; border: none; padding: 10px 13px; border-radius: 5px; cursor: pointer; margin: 5px 0; }
+            button:hover { background-color: #2ea043; }
         </style>
     </head>
     <body>
@@ -125,16 +65,16 @@ void setup() {
             <div class="control-group">
                 <label for="bldc">無刷馬達速度 Motor Speed(PWM):</label>
                 <div class="input-group">
-                    <input type="number" id="bldc" min="4.882" max="40" value="4.882" step="0.001" onchange="updatePWM('bldc', this.value)">
+                    <input type="number" id="bldc" min="5" max="40" value="5" step="0.001" onchange="updatePWM('bldc', this.value)">
                     <pre>  </pre>
                     <span>%</span>
                 </div>
                 <div class="button-group">
-                    <button onclick="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) - 0.001)">-0.001%</button>
                     <button onclick="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) - 0.01)">-0.01%</button>
+                    <button onclick="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) - 0.1)">-0.1%</button>
+                    <button onclick="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) + 0.1)">+0.1%</button>
                     <button onclick="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) + 0.01)">+0.01%</button>
-                    <button onclick="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) + 0.001)">+0.001%</button>
-                    <button onclick="updatePWM('bldc', 4.882)">Reset</button>
+                    <button onclick="updatePWM('bldc', 5)">Reset</button>
                 </div>
             </div>
             
@@ -159,7 +99,7 @@ void setup() {
 
         <script>
             function updatePWM(device, value) {
-                value = Math.max(4.882, Math.min(40, parseFloat(value))).toFixed(3);
+                value = Math.max(5, Math.min(40, parseFloat(value))).toFixed(3);
                 document.getElementById(device).value = value;
                 var pwmValue = Math.round((value / 100) * 16383);
                 var xhr = new XMLHttpRequest();
@@ -194,7 +134,7 @@ void setup() {
     int value = request->getParam("value")->value().toInt();
     
     if (device == "bldc") {
-      if (value!=0) bldcSpeed = constrain(value, 800, 8000);
+      if (value!=0 && value!=5) bldcSpeed = constrain(value, 0, 4095);
       else bldcSpeed = 0;
       ledcWrite(bldcChannel, bldcSpeed);
     }    
