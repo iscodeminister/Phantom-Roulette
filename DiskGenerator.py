@@ -79,7 +79,7 @@ class CircularApp:
     def __init__(self, master):
         self.master = master
         self.master.title("影像轉換成圓盤")
-        self.master.geometry("400x500")
+        self.master.geometry("400x550")
         self.master.resizable(False, False)      
         self.gif_path = None
         self.circular_image = None
@@ -104,18 +104,30 @@ class CircularApp:
 
         self.save_button = tk.Button(button_frame, text="保存", command=self.save_image, state=tk.DISABLED)
         self.save_button.pack(side=tk.LEFT, padx=5)
+        
+        option_frame = tk.Frame(self.master)
+        option_frame.pack(pady=5)
 
         self.flip_var = tk.BooleanVar()
-        self.flip_check = tk.Checkbutton(button_frame, text="翻轉", variable=self.flip_var, command=self.refresh_image)
+        self.flip_check = tk.Checkbutton(option_frame, text="翻轉", variable=self.flip_var, command=self.refresh_image)
         self.flip_check.pack(side=tk.LEFT, padx=5)
 
         self.mode_var = tk.BooleanVar()
-        self.mode_check = tk.Checkbutton(button_frame, text="單張", variable=self.mode_var)
+        self.mode_check = tk.Checkbutton(option_frame, text="單張", variable=self.mode_var)
         self.mode_check.pack(side=tk.LEFT, padx=5)
+
+
+        # create a entry for radius_cm with label on top of entry
+        self.radius_label = tk.Label(option_frame, text="半徑(cm)")
+        self.radius_label.pack(side=tk.LEFT, padx=5)
+        self.radius_var = tk.DoubleVar()
+        self.radius_var.set(6)
+        self.radius_entry = tk.Entry(option_frame, textvariable=self.radius_var, width=5)
+        self.radius_entry.pack(side=tk.LEFT, padx=5)
 
         slider_frame = tk.Frame(self.master)
         slider_frame.pack(pady=5)
-        
+
         self.scale_slider = tk.Scale(slider_frame, from_=0, to=3.0, resolution=0.05,
                                      orient=tk.HORIZONTAL, label="縮放比例", variable=self.scale_var,
                                      length=150)
@@ -143,7 +155,7 @@ class CircularApp:
         if not self.image_path:
             messagebox.showerror("錯誤", "未選擇文件")
             return
-        self.circular_image = create_circular_single_image(self.image_path, 6, 300, (255, 255, 255))
+        self.circular_image = create_circular_single_image(self.image_path, self.radius_var.get() , 300, (255, 255, 255))
         self.save_button.config(state=tk.NORMAL)
         circular_image2 = self.circular_image.resize((350, 350), Image.LANCZOS)
         self.show_image(circular_image2) 
@@ -154,7 +166,7 @@ class CircularApp:
             messagebox.showerror("錯誤", "未選擇文件")
             return
         
-        self.circular_image = create_circular_animation(self.gif_path, radius_cm=6, dpi=300, background_color=(255, 255, 255))
+        self.circular_image = create_circular_animation(self.gif_path, radius_cm=self.radius_var.get(), dpi=300, background_color=(255, 255, 255))
         self.save_button.config(state=tk.NORMAL)
         #resize image to fit canvas and just for show ,don't change the original image
         circular_image2 = self.circular_image.resize((350, 350), Image.LANCZOS)
@@ -165,9 +177,9 @@ class CircularApp:
             messagebox.showerror("錯誤", "未選擇文件")
             return
         if self.mode_var.get():
-            self.circular_image = create_circular_single_image(self.image_path, 6, 300, (255, 255, 255),self.scale_var.get(),self.height_var.get(),self.flip_var.get())
+            self.circular_image = create_circular_single_image(self.image_path, self.radius_var.get(), 300, (255, 255, 255),self.scale_var.get(),self.height_var.get(),self.flip_var.get())
         else:
-            self.circular_image = create_circular_animation(self.gif_path, 6,300,(255, 255, 255),self.scale_var.get(),self.height_var.get(),self.flip_var.get())
+            self.circular_image = create_circular_animation(self.gif_path, self.radius_var.get(),300,(255, 255, 255),self.scale_var.get(),self.height_var.get(),self.flip_var.get())
         circular_image2 = self.circular_image.resize((350, 350), Image.LANCZOS)
         self.show_image(circular_image2)
 
