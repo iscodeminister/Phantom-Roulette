@@ -2,81 +2,137 @@
 <html lang="zh-Hant-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, maximum-scale=1" />
+    <!-- iOS-specific meta tags -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
     <title>Phantom Roulette v1.15.1</title>
     <style>
+        /* CSS Reset for iOS */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* Allow selection for inputs */
+        input {
+            -webkit-user-select: auto;
+            user-select: auto;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             background-color: #0d1117;
             color: #c9d1d9;
             margin: 0;
             padding: 20px;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
         }
+
         .container {
             background-color: #161b22;
-            border-radius: 10px;
+            border-radius: 16px;
             padding: 20px;
             width: 100%;
             max-width: 400px;
             box-shadow: 0 1px 3px rgba(27, 31, 35, 0.12), 0 8px 24px rgba(27, 31, 35, 0.12);
         }
+
         h2 {
             text-align: center;
             color: #c9d1d9;
             margin-bottom: 5px;
+            font-size: 24px;
         }
+
         p {
             text-align: center;
             color: #8b949e;
             margin-top: 0;
             margin-bottom: 20px;
+            font-size: 16px;
         }
+
         .control-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
+
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             color: #c9d1d9;
+            font-size: 16px;
         }
+
         .input-group {
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
+
         input[type="number"] {
             flex-grow: 1;
             background-color: #0d1117;
             border: 1px solid #30363d;
             color: #c9d1d9;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-right: 8px;
         }
+
+        /* Remove spinner buttons from number inputs */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
         .value-display {
             margin-left: 10px;
             color: #c9d1d9;
             font-weight: bold;
         }
+
         .button-group {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+            gap: 8px;
+            margin-top: 12px;
         }
+
         button {
             background-color: #238636;
             color: #ffffff;
             border: none;
-            padding: 10px 13px;
-            border-radius: 5px;
+            padding: 12px;
+            border-radius: 8px;
             cursor: pointer;
-            margin: 5px 0;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+            min-height: 44px; /* iOS minimum touch target size */
         }
-        button:hover {
+
+        button:active {
             background-color: #2ea043;
+            transform: scale(0.98);
+        }
+
+        /* Custom styles for the multiplier input */
+        #customMultiplier {
+            width: 60px;
+            text-align: center;
         }
     </style>
 </head>
@@ -86,43 +142,51 @@
         <p>Phantom Roulette</p>
         
         <div class="control-group">
-            <label for="bldc">無刷馬達速度 Brushless Motor Speed(PWM):</label>
+            <label for="bldc">無刷馬達速度 Motor Speed(PWM):</label>
             <div class="input-group">
-                <input type="number" id="bldc" min="4.882" max="40" value="4.882" step="0.001" onchange="updatePWM('bldc', this.value)">
-                <pre>  </pre>
+                <input type="number" id="bldc" min="5" max="40" value="5" step="0.001" 
+                       inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*">
                 <span>%</span>
             </div>
             <div class="button-group">
-                <button onclick="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) - 0.001)">-0.001%</button>
-                <button onclick="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) - 0.01)">-0.01%</button>
-                <button onclick="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) + 0.01)">+0.01%</button>
-                <button onclick="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) + 0.001)">+0.001%</button>
-                <button onclick="updatePWM('bldc', 4.882)">Reset</button>
+                <button ontouchstart="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) - 0.01)">-0.01%</button>
+                <button ontouchstart="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) - 0.1)">-0.1%</button>
+                <button ontouchstart="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) + 0.1)">+0.1%</button>
+                <button ontouchstart="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) + 0.01)">+0.01%</button>
+                <button ontouchstart="updatePWM('bldc', 5)">Reset</button>
             </div>
         </div>
         
         <div class="control-group">
-            <label for="freq">閃爍頻率 Strobe Frequency (Hz):</label>
+            <label for="freq">閃爍頻率 Strobe Frequency:</label>
             <div class="input-group">
-                <input type="number" id="freq" min="30" max="480" value="60" onchange="updateFreq(this.value)">
-                <pre>  </pre>
+                <input type="number" id="freq" min="30" max="480" value="60" 
+                       inputmode="numeric" pattern="[0-9]*">
                 <span>Hz</span>
             </div>
             <div class="button-group">
-                <input type="number" id="customMultiplier" min="1" max="10" value="2" step="0.1">
-                <pre>   </pre>
-                <button onclick="updateFreq(parseFloat(document.getElementById('freq').value) / document.getElementById('customMultiplier').value)">除 Divide</button>
-                <pre>   </pre>
-                <button onclick="updateFreq(parseFloat(document.getElementById('freq').value) * document.getElementById('customMultiplier').value)">乘 Multiply</button>
-                <pre>   </pre>
-                <button onclick="updateFreq(60)">Reset</button>
+                <input type="number" id="customMultiplier" min="1" max="10" value="2" step="0.1"
+                       inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*">
+                <button ontouchstart="updateFreq(parseFloat(document.getElementById('freq').value) / document.getElementById('customMultiplier').value)">除 Divide</button>
+                <button ontouchstart="updateFreq(parseFloat(document.getElementById('freq').value) * document.getElementById('customMultiplier').value)">乘 Multiply</button>
+                <button ontouchstart="updateFreq(60)">Reset</button>
             </div>
         </div>
     </div>
 
     <script>
+        // Prevent double-tap zoom on iOS
+        document.addEventListener('touchend', function(event) {
+            event.preventDefault();
+        });
+
+        // Prevent bounce scrolling on iOS
+        document.body.addEventListener('touchmove', function(event) {
+            event.preventDefault();
+        }, { passive: false });
+
         function updatePWM(device, value) {
-            value = Math.max(4.882, Math.min(40, parseFloat(value))).toFixed(3);
+            value = Math.max(5, Math.min(40, parseFloat(value))).toFixed(3);
             document.getElementById(device).value = value;
             var pwmValue = Math.round((value / 100) * 16383);
             var xhr = new XMLHttpRequest();
@@ -138,12 +202,14 @@
             xhr.send();
         }
 
-        function applyCustomMultiplier() {
-            var currentFreq = parseFloat(document.getElementById('freq').value);
-            var multiplier = parseFloat(document.getElementById('customMultiplier').value);
-            var newFreq = currentFreq * multiplier;
-            updateFreq(newFreq);
-        }
+        // Add input event listeners for real-time updates
+        document.getElementById('bldc').addEventListener('input', function() {
+            updatePWM('bldc', this.value);
+        });
+
+        document.getElementById('freq').addEventListener('input', function() {
+            updateFreq(this.value);
+        });
     </script>
 </body>
 </html>
