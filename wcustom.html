@@ -2,22 +2,20 @@
 <html lang="zh-Hant-TW">
 <head>
     <meta charset="UTF-8">
-    <!-- iOS-specific meta tags -->
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
-    <title>Phantom Roulette v1.15.1</title>
+    <title>Phantom Roulette v1.15.2</title>
     <style>
-        /* CSS Reset for iOS */
         * {
             -webkit-tap-highlight-color: transparent;
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             user-select: none;
+            box-sizing: border-box;
         }
 
-        /* Allow selection for inputs */
         input {
             -webkit-user-select: auto;
             user-select: auto;
@@ -78,9 +76,10 @@
             display: flex;
             align-items: center;
             margin-bottom: 12px;
+            position: relative;
         }
 
-        input[type="number"] {
+        input[type="text"] {
             flex-grow: 1;
             background-color: #0d1117;
             border: 1px solid #30363d;
@@ -89,19 +88,14 @@
             border-radius: 8px;
             font-size: 16px;
             margin-right: 8px;
+            width: 100%;
         }
 
-        /* Remove spinner buttons from number inputs */
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        .value-display {
-            margin-left: 10px;
-            color: #c9d1d9;
-            font-weight: bold;
+        .unit {
+            position: absolute;
+            right: 12px;
+            color: #8b949e;
+            pointer-events: none;
         }
 
         .button-group {
@@ -109,6 +103,26 @@
             grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
             gap: 8px;
             margin-top: 12px;
+        }
+
+        .multiplier-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        #customMultiplier {
+            flex-grow: 1;
+            max-width: 80px;
+            text-align: center;
+            background-color: #0d1117;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
         }
 
         button {
@@ -121,7 +135,7 @@
             font-size: 16px;
             font-weight: 500;
             transition: background-color 0.2s ease;
-            min-height: 44px; /* iOS minimum touch target size */
+            min-height: 44px;
         }
 
         button:active {
@@ -129,10 +143,11 @@
             transform: scale(0.98);
         }
 
-        /* Custom styles for the multiplier input */
-        #customMultiplier {
-            width: 60px;
-            text-align: center;
+        .error-message {
+            color: #f85149;
+            font-size: 14px;
+            margin-top: 4px;
+            display: none;
         }
     </style>
 </head>
@@ -144,71 +159,146 @@
         <div class="control-group">
             <label for="bldc">無刷馬達速度 Motor Speed(PWM):</label>
             <div class="input-group">
-                <input type="number" id="bldc" min="5" max="40" value="5" step="0.001" 
-                       inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*">
-                <span>%</span>
+                <input type="text" id="bldc" inputmode="decimal" placeholder="5.000"
+                      aria-label="Motor Speed PWM">
+                <span class="unit">%</span>
+                <button ontouchstart="updatePWM('bldc', 5)">Reset</button>
             </div>
+            <div id="bldcError" class="error-message">請輸入 5-40 之間的數值 (Please enter a value between 5-40)</div>
             <div class="button-group">
                 <button ontouchstart="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) - 0.01)">-0.01%</button>
                 <button ontouchstart="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) - 0.1)">-0.1%</button>
                 <button ontouchstart="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) + 0.1)">+0.1%</button>
                 <button ontouchstart="updatePWM('bldc', parseFloat(document.getElementById('bldc').value) + 0.01)">+0.01%</button>
-                <button ontouchstart="updatePWM('bldc', 5)">Reset</button>
             </div>
         </div>
         
         <div class="control-group">
             <label for="freq">閃爍頻率 Strobe Frequency:</label>
             <div class="input-group">
-                <input type="number" id="freq" min="30" max="480" value="60" 
-                       inputmode="numeric" pattern="[0-9]*">
-                <span>Hz</span>
-            </div>
-            <div class="button-group">
-                <input type="number" id="customMultiplier" min="1" max="10" value="2" step="0.1"
-                       inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*">
-                <button ontouchstart="updateFreq(parseFloat(document.getElementById('freq').value) / document.getElementById('customMultiplier').value)">除 Divide</button>
-                <button ontouchstart="updateFreq(parseFloat(document.getElementById('freq').value) * document.getElementById('customMultiplier').value)">乘 Multiply</button>
+                <input type="text" id="freq" inputmode="numeric" placeholder="60"
+                      aria-label="Strobe Frequency">
+                <span class="unit">Hz</span>
                 <button ontouchstart="updateFreq(60)">Reset</button>
+            </div>
+            <div id="freqError" class="error-message">請輸入 30-480 之間的數值 (Please enter a value between 30-480)</div>
+            
+            <div class="multiplier-group">
+                <input type="text" id="customMultiplier" inputmode="decimal" placeholder="2.0"
+                      aria-label="Multiplier">
+                <button ontouchstart="divideFreq()">Divide</button>
+                <button ontouchstart="multiplyFreq()">Multiply</button>
+                <button ontouchstart="resetMultiplier()">Reset</button>
+            </div>
+            
+            <div class="button-group">
+                <button ontouchstart="updateFreq(50)">50 Hz</button>
+                <button ontouchstart="updateFreq(60)">60 Hz</button>
+                <button ontouchstart="updateFreq(parseFloat(document.getElementById('freq').value) - 1)">-1 Hz</button>
+                <button ontouchstart="updateFreq(parseFloat(document.getElementById('freq').value) + 1)">+1 Hz</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Prevent double-tap zoom on iOS
-        document.addEventListener('touchend', function(event) {
-            event.preventDefault();
-        });
+        // Initialize default values
+        window.onload = function() {
+            document.getElementById('bldc').value = '5.000';
+            document.getElementById('freq').value = '60';
+            document.getElementById('customMultiplier').value = '2.0';
+        };
 
-        // Prevent bounce scrolling on iOS
-        document.body.addEventListener('touchmove', function(event) {
-            event.preventDefault();
-        }, { passive: false });
+        function validateNumber(value, min, max, decimals = 0) {
+            // Remove any non-numeric characters except decimal point
+            value = value.replace(/[^\d.]/g, '');
+            
+            // Ensure only one decimal point
+            const parts = value.split('.');
+            if (parts.length > 2) {
+                value = parts[0] + '.' + parts.slice(1).join('');
+            }
+            
+            // Convert to number and check bounds
+            const num = parseFloat(value);
+            if (isNaN(num)) return null;
+            
+            // Round to specified decimal places
+            const multiplier = Math.pow(10, decimals);
+            return Math.min(max, Math.max(min, Math.round(num * multiplier) / multiplier));
+        }
 
         function updatePWM(device, value) {
-            value = Math.max(5, Math.min(40, parseFloat(value))).toFixed(3);
-            document.getElementById(device).value = value;
-            var pwmValue = Math.round((value / 100) * 16383);
-            var xhr = new XMLHttpRequest();
+            const input = document.getElementById(device);
+            const errorElement = document.getElementById(device + 'Error');
+            
+            const validatedValue = validateNumber(value.toString(), 5, 40, 3);
+            
+            if (validatedValue === null) {
+                errorElement.style.display = 'block';
+                return;
+            } 
+            
+            errorElement.style.display = 'none';
+            input.value = validatedValue.toFixed(3);
+            
+            const pwmValue = Math.round((validatedValue / 100) * 16383);
+            const xhr = new XMLHttpRequest();
             xhr.open('GET', '/setPWM?device=' + device + '&value=' + pwmValue, true);
             xhr.send();
         }
 
         function updateFreq(value) {
-            value = Math.max(30, Math.min(480, Math.round(parseFloat(value))));
-            document.getElementById('freq').value = value;
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', '/setFreq?value=' + value, true);
+            const input = document.getElementById('freq');
+            const errorElement = document.getElementById('freqError');
+            
+            const validatedValue = validateNumber(value.toString(), 30, 480, 0);
+            
+            if (validatedValue === null) {
+                errorElement.style.display = 'block';
+                return;
+            }
+            
+            errorElement.style.display = 'none';
+            input.value = validatedValue.toString();
+            
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', '/setFreq?value=' + validatedValue, true);
             xhr.send();
         }
 
-        // Add input event listeners for real-time updates
-        document.getElementById('bldc').addEventListener('input', function() {
-            updatePWM('bldc', this.value);
+        function multiplyFreq() {
+            const freq = parseFloat(document.getElementById('freq').value);
+            const multiplier = parseFloat(document.getElementById('customMultiplier').value);
+            if (!isNaN(freq) && !isNaN(multiplier)) {
+                updateFreq(freq * multiplier);
+            }
+        }
+
+        function divideFreq() {
+            const freq = parseFloat(document.getElementById('freq').value);
+            const multiplier = parseFloat(document.getElementById('customMultiplier').value);
+            if (!isNaN(freq) && !isNaN(multiplier) && multiplier !== 0) {
+                updateFreq(freq / multiplier);
+            }
+        }
+        function resetMultiplier() {
+            document.getElementById('customMultiplier').value = '2.0';
+        }
+
+        // Add input event listeners
+        document.getElementById('bldc').addEventListener('input', function(e) {
+            updatePWM('bldc', e.target.value);
         });
 
-        document.getElementById('freq').addEventListener('input', function() {
-            updateFreq(this.value);
+        document.getElementById('freq').addEventListener('input', function(e) {
+            updateFreq(e.target.value);
+        });
+
+        document.getElementById('customMultiplier').addEventListener('input', function(e) {
+            const value = validateNumber(e.target.value, 1, 10, 1);
+            if (value !== null) {
+                e.target.value = value.toFixed(1);
+            }
         });
     </script>
 </body>
